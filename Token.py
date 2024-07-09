@@ -6,12 +6,13 @@ class TokenType(StrEnum):
     NUMBER = auto()
     BOOLEAN = auto()
     NULL = auto()
+    IDENTIFIER = auto()
+    
 
     LEFT_BRACE = auto()
     RIGHT_BRACE = auto()
     LEFT_BRACKET = auto()
     RIGHT_BRACKET = auto()
-    NEW_LINE = auto()
     COMMA = auto()
     COLON = auto()
     EOF = auto()

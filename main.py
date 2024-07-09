@@ -1,7 +1,11 @@
 
 from lexer import Lexer
 
-empty = '''{      
+empty = '''{
+  "FirstName": "Fred",
+  "s": action1,
+  "int":  1,
+  "float": 11.555,
   }'''
 example_json = '''{
   "FirstName": "Fred",

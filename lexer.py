@@ -2,6 +2,7 @@ from Token import Token, TokenType
 from typing import List
 
 class Lexer:
+    keywords = ['null', 'true', 'false']
     tokens: List[Token]
     cursor = 0
     line = 1
@@ -24,7 +25,10 @@ class Lexer:
 
     def skip_white_space(self) -> None:
         c = self.peek()
-        while (c == ' ' or c == '\t'):
+        while (c == ' ' or c == '\t' or c == '\n'):
+            if (c == '\n'):
+                self.line += 1
+                self.begining_of_line = self.cursor
             self.advance()
             c = self.peek()
         return
@@ -35,6 +39,19 @@ class Lexer:
         token = None
         self.skip_white_space()
         char = self.advance()
+        if (char.isalpha()):
+            print('char', char)
+            s = self.match_identifier()
+            if (s in self.keywords):
+                token = self.construct_keyword_token(s)
+            else:
+                token = Token(TokenType.IDENTIFIER, s)
+            return token
+
+        if (char.isdigit()):
+            s = self.match_digit()
+            return Token(TokenType.NUMBER, s)
+
         match char:
                 case'{':
                     token = Token(TokenType.LEFT_BRACE, '{')
@@ -48,10 +65,9 @@ class Lexer:
                     token = Token(TokenType.COMMA, ',')
                 case':':
                     token = Token(TokenType.COLON, ':')
-                case'\n':
-                    self.line += 1
-                    self.begining_of_line = self.cursor
-                    token = Token(TokenType.NEW_LINE, '\n')
+                case'"':
+                    s = self.match_string()
+                    token = Token(TokenType.STRING, s)
                 case _:
                     raise ValueError("Unexpected Token", char, "at line",
                                      self.line, "at col", self.cursor - self.begining_of_line)
@@ -63,3 +79,48 @@ class Lexer:
             next = self.next_token()
             self.tokens.append(next)
         return self.tokens
+
+    def match_string(self):
+        string_start_idx = self.cursor
+        char = self.advance()
+        while (char != '"'):
+            char = self.advance()
+        return self.src[string_start_idx: self.cursor - 1]
+
+    def match_identifier(self):
+        start_idx = self.cursor - 1
+        next_char = self.peek()
+        while (next_char.isalnum()):
+            next_char = self.advance()
+        return self.src[start_idx: self.cursor]
+
+    def construct_keyword_token(self, str):
+        token = None
+        match str:
+            case'true':
+                token = Token(TokenType.BOOLEAN, 'true')
+            case'false':
+                token = Token(TokenType.BOOLEAN, 'false')
+            case'null':
+                token = Token(TokenType.BOOLEAN, 'null')
+            case _:
+                raise ValueError("Unexpected Keyword", str, "at line",
+                                 self.line, "at col", self.cursor - self.begining_of_line)
+        return token
+
+    def match_digit(self):
+        start_idx = self.cursor - 1
+        char = self.advance()
+        while (char.isdigit()):
+            char = self.advance()
+
+        if (char == '.'):
+            next = self.peek()
+            if (not next.isdigit()):
+                raise ValueError("Unexpected a number found", next, "at line",
+                                 self.line, "at col", self.cursor - self.begining_of_line)
+            char = self.advance()
+
+        while (char.isdigit()):
+            char = self.advance()
+        return self.src[start_idx: self.cursor]
