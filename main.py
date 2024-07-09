@@ -60,5 +60,5 @@ example_json = '''{
 
 if __name__ == "__main__":
     lexer = Lexer(empty)
-    lexer.tokenize()
-    print(lexer.get_tokens())
+    tokens = lexer.tokenize()
+    print(tokens)
