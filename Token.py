@@ -7,7 +7,6 @@ class TokenType(StrEnum):
     BOOLEAN = auto()
     NULL = auto()
     IDENTIFIER = auto()
-    
 
     LEFT_BRACE = auto()
     RIGHT_BRACE = auto()
@@ -17,6 +16,14 @@ class TokenType(StrEnum):
     COLON = auto()
     EOF = auto()
     
+    # Arithmetic Operators
+    ADDITION = auto()
+    SUBTRACTION = auto()
+    MULTIPLICATION = auto()
+    DIVISION = auto()
+    MODULO = auto()
+    RANGE = auto()
+
 class Token:
     def __init__(self, token_type: TokenType, literal: any) -> None:
         self.token_type = token_type

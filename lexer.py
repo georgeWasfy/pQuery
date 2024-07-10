@@ -20,8 +20,14 @@ class Lexer:
         self.cursor += 1
         return char
 
-    def peek(self) -> str:
-        return self.src[self.cursor]
+    def back(self) -> str:
+        char = self.src[self.cursor]
+        self.cursor -= 1
+        return char
+
+    def peek(self, **kwargs) -> str:
+        step = kwargs.get('step', None)
+        return self.src[self.cursor] if step == None else self.src[self.cursor + step]
 
     def skip_white_space(self) -> None:
         c = self.peek()
@@ -71,7 +77,12 @@ class Lexer:
             self.advance()
             self.skip_comments()
             return
-            
+
+        # match range operator
+        if (char == '.' and self.peek() == '.'):
+            self.advance()
+            return Token(TokenType.RANGE, '..')
+
         token = self.match_literal(char)
 
         return token
@@ -79,7 +90,8 @@ class Lexer:
     def tokenize(self):
         while not self.is_file_end():
             next = self.next_token()
-            self.tokens.append(next)
+            if(next != None):
+                self.tokens.append(next)
         return self.tokens
 
     def match_string(self):
@@ -106,7 +118,7 @@ class Lexer:
             case'null':
                 token = Token(TokenType.BOOLEAN, 'null')
             case _:
-                raise ValueError("Unexpected Keyword", str, "at line",
+                raise ValueError("Expected Keyword", str, "at line",
                                  self.line, "at col", self.cursor - self.begining_of_line)
         return token
 
@@ -118,8 +130,13 @@ class Lexer:
 
         if (char == '.'):
             next = self.peek()
+            # this means it is a range operator so return the number captured so far and go back one step to match the Full range operator
+            if (next == '.'):
+                self.back()
+                return self.src[start_idx: self.cursor]
+
             if (not next.isdigit()):
-                raise ValueError("Unexpected a number found", next, "at line",
+                raise ValueError("Expected a number found", next, "at line",
                                  self.line, "at col", self.cursor - self.begining_of_line)
             char = self.advance()
 
@@ -142,6 +159,16 @@ class Lexer:
                 token = Token(TokenType.COMMA, ',')
             case':':
                 token = Token(TokenType.COLON, ':')
+            case'+':
+                token = Token(TokenType.ADDITION, '+')
+            case'-':
+                token = Token(TokenType.SUBTRACTION, '-')
+            case'*':
+                token = Token(TokenType.MULTIPLICATION, '*')
+            case'/':
+                token = Token(TokenType.DIVISION, '/')
+            case'%':
+                token = Token(TokenType.MODULO, '%')
             case _:
                 raise ValueError("Unexpected Token", char, "at line",
                                  self.line, "at col", self.cursor - self.begining_of_line)
