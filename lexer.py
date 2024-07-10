@@ -2,7 +2,7 @@ from Token import Token, TokenType
 from typing import List
 
 class Lexer:
-    keywords = ['null', 'true', 'false']
+    keywords = ['null', 'true', 'false', 'and', 'or', 'not', 'in']
     tokens: List[Token]
     cursor = 0
     line = 1
@@ -106,7 +106,7 @@ class Lexer:
         next_char = self.peek()
         while (next_char.isalnum()):
             next_char = self.advance()
-        return self.src[start_idx: self.cursor]
+        return self.src[start_idx: self.cursor - 1]
 
     def construct_keyword_token(self, str):
         token = None
@@ -117,6 +117,14 @@ class Lexer:
                 token = Token(TokenType.BOOLEAN, 'false')
             case'null':
                 token = Token(TokenType.BOOLEAN, 'null')
+            case'and':
+                token = Token(TokenType.AND, 'and')
+            case'or':
+                token = Token(TokenType.OR, 'or')
+            case'not':
+                token = Token(TokenType.NOT, 'not')
+            case'in':
+                token = Token(TokenType.IN, 'in')
             case _:
                 raise ValueError("Expected Keyword", str, "at line",
                                  self.line, "at col", self.cursor - self.begining_of_line)
@@ -124,15 +132,15 @@ class Lexer:
 
     def match_digit(self):
         start_idx = self.cursor - 1
-        char = self.advance()
+        char = self.peek()
         while (char.isdigit()):
             char = self.advance()
 
         if (char == '.'):
             next = self.peek()
-            # this means it is a range operator so return the number captured so far and go back one step to match the Full range operator
-            if (next == '.'):
-                self.back()
+            if (next == '.'):   
+                if(self.cursor - start_idx > 1):
+                    self.back() 
                 return self.src[start_idx: self.cursor]
 
             if (not next.isdigit()):
@@ -142,6 +150,8 @@ class Lexer:
 
         while (char.isdigit()):
             char = self.advance()
+        if(self.cursor - start_idx > 1):
+            self.back()        
         return self.src[start_idx: self.cursor]
 
     def match_literal(self, char):
@@ -169,6 +179,27 @@ class Lexer:
                 token = Token(TokenType.DIVISION, '/')
             case'%':
                 token = Token(TokenType.MODULO, '%')
+            case'=':
+                token = Token(TokenType.EQUAL, '=')
+            case'!':
+                next = self.peek()
+                if (next == '='):
+                    self.advance()
+                    token = Token(TokenType.NOTEQUAL, '!=')
+            case'<':
+                next = self.peek()
+                if (next == '='):
+                    self.advance()
+                    token = Token(TokenType.LEQ, '<=')
+                else:
+                    token = Token(TokenType.LE, '<')
+            case'>':
+                next = self.peek()
+                if (next == '='):
+                    self.advance()
+                    token = Token(TokenType.GTQ, '>=')
+                else:
+                    token = Token(TokenType.GT, '>')
             case _:
                 raise ValueError("Unexpected Token", char, "at line",
                                  self.line, "at col", self.cursor - self.begining_of_line)

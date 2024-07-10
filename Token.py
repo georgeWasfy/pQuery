@@ -24,6 +24,20 @@ class TokenType(StrEnum):
     MODULO = auto()
     RANGE = auto()
 
+    # Comparison Operators
+    EQUAL = auto()
+    NOTEQUAL = auto()
+    LE = auto()
+    GT = auto()
+    LEQ = auto()
+    GTQ = auto()
+    IN = auto()
+
+    # Logical Operators
+    AND = auto()
+    OR = auto()
+    NOT = auto()
+
 class Token:
     def __init__(self, token_type: TokenType, literal: any) -> None:
         self.token_type = token_type
