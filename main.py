@@ -5,7 +5,8 @@ empty = '''{
   "FirstName": "Fred",
   "s": action1,
   "int":  1,
-  "float": 11.555,
+  "float": 11.555
+  /* Long-winded expressions might need some explanation */
   }'''
 example_json = '''{
   "FirstName": "Fred",

@@ -32,45 +32,47 @@ class Lexer:
             self.advance()
             c = self.peek()
         return
+    def skip_comments(self) -> None:
+        char = self.advance()
+        while(char != '*'):
+            char = self.advance()
+        if(self.peek() == '/'):
+            self.advance()
+            return
+        raise ValueError('Comment has no closing tag')
+        
 
     def next_token(self):
         if (self.is_file_end()):
             return Token(TokenType.EOF, 'EOF')
-        token = None
         self.skip_white_space()
         char = self.advance()
+        #match identifiers
         if (char.isalpha()):
-            print('char', char)
             s = self.match_identifier()
             if (s in self.keywords):
                 token = self.construct_keyword_token(s)
             else:
                 token = Token(TokenType.IDENTIFIER, s)
             return token
-
+        
+        #match numbers
         if (char.isdigit()):
             s = self.match_digit()
             return Token(TokenType.NUMBER, s)
-
-        match char:
-                case'{':
-                    token = Token(TokenType.LEFT_BRACE, '{')
-                case'}':
-                    token = Token(TokenType.RIGHT_BRACE, '}')
-                case'[':
-                    token = Token(TokenType.LEFT_BRACKET, '[')
-                case']':
-                    token = Token(TokenType.RIGHT_BRACKET, ']')
-                case',':
-                    token = Token(TokenType.COMMA, ',')
-                case':':
-                    token = Token(TokenType.COLON, ':')
-                case'"':
-                    s = self.match_string()
-                    token = Token(TokenType.STRING, s)
-                case _:
-                    raise ValueError("Unexpected Token", char, "at line",
-                                     self.line, "at col", self.cursor - self.begining_of_line)
+        
+        #match strings
+        if (char == '"'):
+            s = self.match_string()
+            return Token(TokenType.STRING, s)
+        
+        #skip comments
+        if(char == '/' and self.peek() == '*'):
+            self.advance()
+            self.skip_comments()
+            return
+            
+        token = self.match_literal(char)
 
         return token
 
@@ -124,3 +126,23 @@ class Lexer:
         while (char.isdigit()):
             char = self.advance()
         return self.src[start_idx: self.cursor]
+
+    def match_literal(self, char):
+        token = None
+        match char:
+            case'{':
+                token = Token(TokenType.LEFT_BRACE, '{')
+            case'}':
+                token = Token(TokenType.RIGHT_BRACE, '}')
+            case'[':
+                token = Token(TokenType.LEFT_BRACKET, '[')
+            case']':
+                token = Token(TokenType.RIGHT_BRACKET, ']')
+            case',':
+                token = Token(TokenType.COMMA, ',')
+            case':':
+                token = Token(TokenType.COLON, ':')
+            case _:
+                raise ValueError("Unexpected Token", char, "at line",
+                                 self.line, "at col", self.cursor - self.begining_of_line)
+        return token
