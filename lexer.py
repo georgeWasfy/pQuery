@@ -132,7 +132,7 @@ class Lexer:
 
     def match_digit(self):
         start_idx = self.cursor - 1
-        char = self.peek()
+        char = self.advance()
         while (char.isdigit()):
             char = self.advance()
 
