@@ -82,9 +82,8 @@ class Lexer:
         if (char == '.' and self.peek() == '.'):
             self.advance()
             return Token(TokenType.RANGE, '..')
-
+        
         token = self.match_literal(char)
-
         return token
 
     def tokenize(self):
@@ -106,7 +105,9 @@ class Lexer:
         next_char = self.peek()
         while (next_char.isalnum()):
             next_char = self.advance()
-        return self.src[start_idx: self.cursor - 1]
+        if(self.cursor - start_idx > 1):
+            self.back() 
+        return self.src[start_idx: self.cursor]
 
     def construct_keyword_token(self, str):
         token = None
@@ -165,6 +166,16 @@ class Lexer:
                 token = Token(TokenType.LEFT_BRACKET, '[')
             case']':
                 token = Token(TokenType.RIGHT_BRACKET, ']')
+            case'(':
+                token = Token(TokenType.LEFT_PARENTHESIS, '(')
+            case')':
+                token = Token(TokenType.RIGHT_PARENTHESIS, ')')
+            case'.':
+                token = Token(TokenType.MAP, '.')
+            case '^':
+                token = Token(TokenType.CARET, '^')
+            # case '`':
+            #     token = Token(TokenType.BACKTICK, '`')
             case',':
                 token = Token(TokenType.COMMA, ',')
             case':':
@@ -174,11 +185,16 @@ class Lexer:
             case'-':
                 token = Token(TokenType.SUBTRACTION, '-')
             case'*':
-                token = Token(TokenType.ASTERISK, '*')
+                next = self.peek()
+                if (next == '*'):
+                    self.advance()
+                    token = Token(TokenType.DESCENDANTS, '**')
+                else:
+                    token = Token(TokenType.ASTERISK, '*')
             case'/':
                 token = Token(TokenType.DIVISION, '/')
             case'%':
-                token = Token(TokenType.MODULO, '%')
+                token = Token(TokenType.PERCENTAGE, '%')
             case'=':
                 token = Token(TokenType.EQUAL, '=')
             case'!':
@@ -186,6 +202,9 @@ class Lexer:
                 if (next == '='):
                     self.advance()
                     token = Token(TokenType.NOTEQUAL, '!=')
+                else:
+                    raise ValueError("Expected = found", char, "at line",
+                                     self.line, "at col", self.cursor - self.begining_of_line)
             case'<':
                 next = self.peek()
                 if (next == '='):

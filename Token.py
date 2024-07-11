@@ -7,21 +7,25 @@ class TokenType(StrEnum):
     BOOLEAN = auto()
     NULL = auto()
     IDENTIFIER = auto()
-
+    
+    # Multi use Operators
     LEFT_BRACE = auto()
     RIGHT_BRACE = auto()
     LEFT_BRACKET = auto()
     RIGHT_BRACKET = auto()
+    LEFT_PARENTHESIS = auto()
+    RIGHT_PARENTHESIS = auto()
     COMMA = auto()
     COLON = auto()
+    ASTERISK = auto()
+    PERCENTAGE = auto()
+    # BACKTICK = auto()
     EOF = auto()
     
     # Arithmetic Operators
     ADDITION = auto()
     SUBTRACTION = auto()
-    ASTERISK = auto()
     DIVISION = auto()
-    MODULO = auto()
     RANGE = auto()
 
     # Comparison Operators
@@ -37,6 +41,11 @@ class TokenType(StrEnum):
     AND = auto()
     OR = auto()
     NOT = auto()
+    
+    # Path Operators
+    MAP = auto()
+    CARET = auto()
+    DESCENDANTS = auto()
 
 class Token:
     def __init__(self, token_type: TokenType, literal: any) -> None:

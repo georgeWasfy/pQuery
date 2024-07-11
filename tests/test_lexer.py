@@ -47,3 +47,17 @@ class TestLexer(unittest.TestCase):
         lexer = Lexer(test_obj)
         tokens = lexer.tokenize()
         self.assertEqual(str(tokens), expected)
+
+    def test_path_operators(self):
+        test_obj = '''{
+            "map": Address.City,
+            "filter": Phone[type="mobile"],
+            "orderby":  Account.Order.Product^(>Price),
+            "wildcard": Address.*,
+            "descendants": **.Postcode,
+            "Parent": %.OrderID,
+            }'''
+        expected = "[Token(Type=left_brace, literal={), Token(Type=string, literal=map), Token(Type=colon, literal=:), Token(Type=identifier, literal=Address), Token(Type=map, literal=.), Token(Type=identifier, literal=City), Token(Type=comma, literal=,), Token(Type=string, literal=filter), Token(Type=colon, literal=:), Token(Type=identifier, literal=Phone), Token(Type=left_bracket, literal=[), Token(Type=identifier, literal=type), Token(Type=equal, literal==), Token(Type=string, literal=mobile), Token(Type=right_bracket, literal=]), Token(Type=comma, literal=,), Token(Type=string, literal=orderby), Token(Type=colon, literal=:), Token(Type=identifier, literal=Account), Token(Type=map, literal=.), Token(Type=identifier, literal=Order), Token(Type=map, literal=.), Token(Type=identifier, literal=Product), Token(Type=caret, literal=^), Token(Type=left_parenthesis, literal=(), Token(Type=gt, literal=>), Token(Type=identifier, literal=Price), Token(Type=right_parenthesis, literal=)), Token(Type=comma, literal=,), Token(Type=string, literal=wildcard), Token(Type=colon, literal=:), Token(Type=identifier, literal=Address), Token(Type=map, literal=.), Token(Type=asterisk, literal=*), Token(Type=comma, literal=,), Token(Type=string, literal=descendants), Token(Type=colon, literal=:), Token(Type=descendants, literal=**), Token(Type=map, literal=.), Token(Type=identifier, literal=Postcode), Token(Type=comma, literal=,), Token(Type=string, literal=Parent), Token(Type=colon, literal=:), Token(Type=percentage, literal=%), Token(Type=map, literal=.), Token(Type=identifier, literal=OrderID), Token(Type=comma, literal=,), Token(Type=right_brace, literal=})]"
+        lexer = Lexer(test_obj)
+        tokens = lexer.tokenize()
+        self.assertEqual(str(tokens), expected)
