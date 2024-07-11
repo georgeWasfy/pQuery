@@ -174,7 +174,7 @@ class Lexer:
             case'-':
                 token = Token(TokenType.SUBTRACTION, '-')
             case'*':
-                token = Token(TokenType.MULTIPLICATION, '*')
+                token = Token(TokenType.ASTERISK, '*')
             case'/':
                 token = Token(TokenType.DIVISION, '/')
             case'%':

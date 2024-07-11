@@ -19,7 +19,7 @@ class TokenType(StrEnum):
     # Arithmetic Operators
     ADDITION = auto()
     SUBTRACTION = auto()
-    MULTIPLICATION = auto()
+    ASTERISK = auto()
     DIVISION = auto()
     MODULO = auto()
     RANGE = auto()
