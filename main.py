@@ -63,6 +63,6 @@ example_json = '''{
 }'''
 
 if __name__ == "__main__":
-    lexer = Lexer(example_json)
+    lexer = Lexer('"string1" "string2"')
     tokens = lexer.tokenize()
     print(tokens)

@@ -35,7 +35,7 @@ class TokenKind(StrEnum):
     
     # Arithmetic Operators
     PLUS = auto()
-    HYPHEHN = auto()
+    HYPHEN = auto()
     RANGE = auto()
 
     # Comparison Operators

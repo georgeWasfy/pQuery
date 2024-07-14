@@ -12,18 +12,20 @@ class Lexer:
         self.src = src
         self.tokens = []
 
-    def is_file_end(self):
+    def is_end(self):
         return self.cursor >= len(self.src)
 
-    def advance(self) -> str:
+    def advance(self) -> str | None:
+        if (self.is_end()):
+            return None
         char = self.src[self.cursor]
         self.cursor += 1
         return char
 
-    def back(self) -> str:
-        char = self.src[self.cursor]
-        self.cursor -= 1
-        return char
+    def back(self) -> None:
+        if (self.cursor > 0):
+            self.cursor -= 1
+
 
     def peek(self, **kwargs) -> str:
         step = kwargs.get('step', None)
@@ -46,13 +48,12 @@ class Lexer:
             self.advance()
             return
         raise ValueError('Comment has no closing tag')
-        
 
     def next_token(self):
-        if (self.is_file_end()):
-            return Token(TokenType.VALUE, TokenKind.EOF, 'EOF')
         self.skip_white_space()
         char = self.advance()
+        if (not char):
+            return Token(TokenType.VALUE, TokenKind.EOF, 'EOF')
         # match names
         if (char.isalpha() or char == '_'):
             s = self.match_name()
@@ -87,7 +88,7 @@ class Lexer:
         return token
 
     def tokenize(self):
-        while not self.is_file_end():
+        while not self.is_end():
             next = self.next_token()
             if(next != None):
                 self.tokens.append(next)
@@ -96,16 +97,19 @@ class Lexer:
     def match_string(self):
         string_start_idx = self.cursor
         char = self.advance()
-        while (char != '"'):
+        while (char is not None and char != '"'):
             char = self.advance()
+        if(char != '"'):
+            raise ValueError('Expected closing " found', char, "at line",
+                                 self.line, "at col", self.cursor - self.begining_of_line)
         return self.src[string_start_idx: self.cursor - 1]
 
     def match_name(self):
         start_idx = self.cursor - 1
         next_char = self.peek()
-        while (next_char.isalnum() or "_"):
+        while (next_char and (next_char.isalnum() or next_char == "_")):
             next_char = self.advance()
-        if(self.cursor - start_idx > 1):
+        if (next_char is not None):
             self.back() 
         return self.src[start_idx: self.cursor]
 
@@ -134,7 +138,7 @@ class Lexer:
     def match_digit(self):
         start_idx = self.cursor - 1
         char = self.advance()
-        while (char.isdigit()):
+        while (char and char.isdigit()):
             char = self.advance()
 
         if (char == '.'):
@@ -149,10 +153,11 @@ class Lexer:
                                  self.line, "at col", self.cursor - self.begining_of_line)
             char = self.advance()
 
-        while (char.isdigit()):
+        while (char and char.isdigit()):
             char = self.advance()
-        if(self.cursor - start_idx > 1):
-            self.back()        
+        # char is now a character that is not digit back the cursor by 1 to catch it in main loop
+        if (char is not None):
+            self.back()
         return self.src[start_idx: self.cursor]
 
     def match_literal(self, char):
@@ -183,7 +188,7 @@ class Lexer:
             case'+':
                 token = Token(TokenType.OPERATOR, TokenKind.PLUS, '+')
             case'-':
-                token = Token(TokenType.OPERATOR, TokenKind.HYPHEHN, '-')
+                token = Token(TokenType.OPERATOR, TokenKind.HYPHEN, '-')
             case'*':
                 next = self.peek()
                 if (next == '*'):
