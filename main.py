@@ -64,5 +64,5 @@ example_json = '''{
 
 if __name__ == "__main__":
     parser = Parser()
-    ast = parser.parse("1 + 1")
+    ast = parser.parse("1 + 1 + 1 + 1")
     print(ast)

@@ -1,6 +1,6 @@
 from typing import List
 from lexer import Lexer
-from Token import Token
+from Token import Token, TokenType
 from symbol import Infix, Literal, Symbol
 
 
@@ -11,7 +11,7 @@ class Parser:
 
     def __init__(self) -> None:
         self.make_symbol("+", Infix)
-        self.make_symbol("number", Literal)
+        self.make_symbol("<literal>", Literal)
         self.make_symbol("<end>", Literal)
         
     def make_symbol(self, sid, symbol_class=Symbol):
@@ -35,18 +35,27 @@ class Parser:
         token = self.tokens[self.current_token_idx]
         self.current_token_idx += 1
         symbol_table = self.symbol_table
-        # first look up symbol's value
-        if token.value in symbol_table:
+        if (token.token_type == TokenType.OPERATOR):
             sym = symbol_table[token.value]
-        elif token.token_type in symbol_table:
-            # then symbol's type
-            sym = symbol_table[token.token_type]
+
+        elif (token.token_type == TokenType.NUMBER or token.token_kind == TokenType.STRING):
+            sym = symbol_table['<literal>']
         else:
             raise ValueError("Undefined token %s" % repr(token))
 
         self.token = token
         self.token.symbol = sym(self, token.value)
         return self.token
+
+    def expression(self, rbp):
+        tok = self.token
+        self.advance()
+        left = tok.symbol.nud()
+        while rbp < self.token.symbol.lbp:
+            tok = self.token
+            self.advance()
+            left = tok.symbol.led(left)
+        return left
 
     def parse(self, source):
         lexer = Lexer(source)
@@ -58,13 +67,3 @@ class Parser:
         finally:
             self.tokens = []
             self.token = None
-            
-    def expression(self, rbp):
-        tok = self.token
-        self.advance()
-        left = tok.symbol.nud()
-        while rbp < self.token.symbol.lbp:
-            tok = self.token
-            self.advance()
-            left = tok.symbol.led(left)
-        return left
