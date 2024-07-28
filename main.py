@@ -1,5 +1,5 @@
 
-from lexer import Lexer
+from parser import Parser
 
 numbers = '''{
     "singlenumber": 1,
@@ -63,6 +63,6 @@ example_json = '''{
 }'''
 
 if __name__ == "__main__":
-    lexer = Lexer('"string1" "string2"')
-    tokens = lexer.tokenize()
-    print(tokens)
+    parser = Parser()
+    ast = parser.parse("1 + 1")
+    print(ast)

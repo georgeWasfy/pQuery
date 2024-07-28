@@ -1,50 +1,70 @@
-from typing import List, Optional
-from Token import Token, TokenType
-from symbol import Symbol
+from typing import List
+from lexer import Lexer
+from Token import Token
+from symbol import Infix, Literal, Symbol
 
 
 class Parser:
-    symbol_table = {}
-    scope = {}
-    current_token = None
     current_token_idx = 0
+    current_token: Token = None
+    symbol_table = {}
 
-    def __init__(self, tokens: List[Token]) -> None:
-        self.tokens = tokens
+    def __init__(self) -> None:
+        self.make_symbol("+", Infix)
+        self.make_symbol("number", Literal)
+        self.make_symbol("<end>", Literal)
+        
+    def make_symbol(self, sid, symbol_class=Symbol):
+        symbol_table = self.symbol_table
+        sym = symbol_table[sid] = symbol_table.get(sid, type(
+            symbol_class.__name__,
+            (symbol_class,),
+            {'id': sid}
+        ))
+        return sym
 
-    def create_symbol(self, id: str, bp: Optional[int] = 0) -> Symbol:
-        symbol = self.symbol_table.get(id, None)
-        if (symbol):
-            if (bp >= symbol['lbp']):
-                symbol['lbp'] = bp
-            return symbol
-        symbol = Symbol(id, bp)
-        self.symbol_table[id] = symbol
-        return symbol
-
-    def advance(self, id: Optional[str] = None) -> Symbol:
-        if (id is not None and self.current_token['id'] != id):
-            raise ValueError("Expected ", id)
+    def advance(self, value=None) -> Token | None:
+        if value and value not in (self.current_token.symbol.value, self.current_token.symbol.id):
+            raise ValueError(
+                "Expected `%s'; got `%s' instead" % (value, self.current_token.symbol.value))
 
         if (self.current_token_idx >= len(self.tokens)):
-            self.current_token = Token(TokenType.EOF, 'eof')
+            self.current_token = self.symbol_table["<end>"]
             return
+
         token = self.tokens[self.current_token_idx]
         self.current_token_idx += 1
-        value = token.value
-        arity = token.token_type
-        symbol = None
-        if (arity == TokenType.IDENTIFIER):
-            symbol = self.scope.get(value)
-            
-        if (arity == TokenType.STRING or arity == TokenType.NUMBER):
-            arity = TokenType.LITERAL
-            symbol = self.symbol_table[TokenType.LITERAL]
-            
-        # this must be an operator
+        symbol_table = self.symbol_table
+        # first look up symbol's value
+        if token.value in symbol_table:
+            sym = symbol_table[token.value]
+        elif token.token_type in symbol_table:
+            # then symbol's type
+            sym = symbol_table[token.token_type]
         else:
-            symbol = self.symbol_table.get(value, None)
-            if (not symbol):
-                raise ValueError('Unkown operator ', value)
+            raise ValueError("Undefined token %s" % repr(token))
+
+        self.token = token
+        self.token.symbol = sym(self, token.value)
+        return self.token
+
+    def parse(self, source):
+        lexer = Lexer(source)
+        try:
+            self.tokens = lexer.tokenize()
+            self.advance()
+            exp = self.expression(0)
+            return exp
+        finally:
+            self.tokens = []
+            self.token = None
             
-        return Token(token.token_type, value, arity, symbol)
+    def expression(self, rbp):
+        tok = self.token
+        self.advance()
+        left = tok.symbol.nud()
+        while rbp < self.token.symbol.lbp:
+            tok = self.token
+            self.advance()
+            left = tok.symbol.led(left)
+        return left

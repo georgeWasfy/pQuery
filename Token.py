@@ -1,4 +1,9 @@
 from enum import auto, StrEnum
+from typing import Optional
+
+from symbol import Symbol
+
+KEYWORDS = ['null', 'true', 'false', 'and', 'or', 'not', 'in', 'function']
 
 class TokenType(StrEnum):
     VALUE = auto()  # ex: true, false, null
@@ -6,7 +11,9 @@ class TokenType(StrEnum):
     NUMBER = auto()
     STRING = auto()
     OPERATOR = auto()
-    VARIABLE = auto()  # custom variable or pre-defined must start with $
+    # VARIABLE = auto()  # custom variable or pre-defined must start with $
+    LITERAL = auto()
+
 
 
 class TokenKind(StrEnum):
@@ -58,52 +65,13 @@ class TokenKind(StrEnum):
     DESCENDANTS = auto()
 
 class Token:
-    operators = {
-        '.': 75,
-        '[': 80,
-        ']': 0,
-        '{': 70,
-        '}': 0,
-        '(': 80,
-        ')': 0,
-        ',': 0,
-        '@': 80,
-        '#': 80,
-        ';': 80,
-        ':': 80,
-        '?': 20,
-        '+': 50,
-        '-': 50,
-        '*': 60,
-        '/': 60,
-        '%': 60,
-        '|': 20,
-        '=': 40,
-        '<': 40,
-        '>': 40,
-        '^': 40,
-        '**': 60,
-        '..': 20,
-        ':=': 10,
-        '!=': 40,
-        '<=': 40,
-        '>=': 40,
-        '~>': 40,
-        'and': 30,
-        'or': 25,
-        'in': 40,
-        '&': 50,
-        '!': 0,  # not an operator, but needed as a stop character for name tokens
-        '~': 0  # not an operator, but needed as a stop character for name tokens
-    }
-
-    def __init__(self, token_type: TokenType, token_kind: TokenKind, value: any) -> None:
+    
+    def __init__(self, token_type: TokenType, token_kind: TokenKind, value: any, symbol: Optional[Symbol] = None) -> None:
         self.token_type = token_type
         self.token_kind = token_kind
         self.value = value
+        self.symbol = symbol
 
-    def get_operator_precedence(self, operator):
-        return self.operators.get(operator, None)
 
     def __repr__(self) -> str:
-        return f"Token(Type={self.token_type}, Kind={self.token_kind}, value={self.value})"
+        return f"Token(Type={self.token_type}, Kind={self.token_kind}, value={self.value}, symbol={repr(self.symbol)})"

@@ -1,8 +1,7 @@
-from Token import Token, TokenKind, TokenType
+from Token import KEYWORDS, Token, TokenKind, TokenType
 from typing import List
 
 class Lexer:
-    keywords = ['null', 'true', 'false', 'and', 'or', 'not', 'in']
     tokens: List[Token]
     cursor = 0
     line = 1
@@ -57,7 +56,7 @@ class Lexer:
         # match names
         if (char.isalpha() or char == '_'):
             s = self.match_name()
-            if (s in self.keywords):
+            if (s in KEYWORDS):
                 token = self.construct_keyword_token(s)
             else:
                 token = Token(TokenType.NAME, TokenKind.LITERAL, s)
